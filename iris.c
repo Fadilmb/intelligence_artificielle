@@ -3,24 +3,14 @@
 #include <string.h>
 #include <math.h>
 #define filename "iris.data.txt"
-#define DEFINE_LINE_AND_CHARACTERE() int charactere = fileDimension().number_of_character +1; \
-									 int numberOfLine = fileDimension().number_of_line +1;
+#define DEFINE_NUMBER_OF_LINE() int numberOfLine = fileDimension() +1 
 
-struct Size
-{
-   int number_of_line;
-   int number_of_character;
-};
 
-struct Size fileDimension()
+int fileDimension()
 {
   FILE* file = NULL;
-  int count=0;
-  int i=0;
-  int j=0;
+  int count= 0;
   char c;
-
-  struct Size size={-1,-1};
 
   file = fopen(filename, "r");
   if (file != NULL)
@@ -30,38 +20,30 @@ struct Size fileDimension()
       if (c == '\n')
       { 
         count ++;
-        if (i>j)
-        {
-          j = i;       	
-        }
-        i = 0;
-      }
-      else
-      {
-      	i = i +1;
       }
     }
     fclose(file);
-    size.number_of_line = count;
-    size.number_of_character= j;
-    return size;
+    return count;
   }
   else
   {
     printf("Impossible to open the file");
-    return size;
+    return count = -1 ;
   }
 }
 
+typedef struct Data Data;
 struct Data
 {
   double sepal[2];
   double petal[2];
   double norm;
-  char* label;  
+  char* label; 
+
+  Data *suivant; 
 };
 
-void initializeData(struct Data* flower)
+void initializeData(Data* flower)
 {
   flower-> sepal[0] = 0;
   flower-> sepal[1] = 0;
@@ -71,57 +53,143 @@ void initializeData(struct Data* flower)
   flower-> label = "";
 }
 
-struct DataEntry
-  {   
-	struct Data arrayFlower[200];
-  };
+typedef struct Liste Liste;
+struct Liste
+{
+   Data *premier;
+};
 
+Liste *initialisation()
+{
+    Liste *liste = malloc(sizeof(*liste));
+    Data *data = malloc(sizeof(*data));
+
+    if (liste == NULL || data == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    initializeData(data);
+    data->suivant = NULL;
+    liste->premier = data;
+
+    return liste;
+}
+
+void insertion(Liste *liste, Data nvNombre)
+{
+    /* Création du nouvel élément */
+    Data *nouveau = malloc(sizeof(*nouveau));
+    if (liste == NULL || nouveau == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+    nouveau->sepal[0] = nvNombre.sepal[0];
+    //printf("\n%f",nouveau -> sepal[0]);
+    nouveau->sepal[1] = nvNombre.sepal[1];
+    //printf("\n%f",nouveau -> sepal[1]);
+    nouveau->petal[0] = nvNombre.petal[0];
+    //printf("\n%f",nouveau -> petal[0]);
+    nouveau->petal[1] = nvNombre.petal[1];
+    //printf("\n%f",nouveau -> petal[1]);
+    nouveau->norm = nvNombre.norm;
+    //printf("\n%f",nouveau -> norm);
+    nouveau->label = nvNombre.label;
+    //printf("\n%s",nouveau -> label);
+
+
+    /* Insertion de l'élément au début de la liste */
+    nouveau->suivant = liste->premier;
+    liste->premier = nouveau;
+}
+
+void suppression(Liste *liste)
+{
+    if (liste == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    if (liste->premier != NULL)
+    {
+        Data *aSupprimer = liste->premier;
+        liste->premier = liste->premier->suivant;
+        free(aSupprimer);
+    }
+}
+
+void afficherListe(Liste *liste)
+{
+    if (liste == NULL)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    Data *actuel = liste->premier;
+
+    while (actuel != NULL)
+    {
+        printf("%f -> ", actuel->sepal[0]);
+        printf("%f -> ", actuel->sepal[1]);
+        printf("%f -> ", actuel->petal[0]);
+        printf("%f -> ", actuel->petal[1]);
+        printf("%f -> ", actuel->norm);
+        printf("%s -> ", actuel->label);
+        actuel = actuel->suivant;
+    }
+    printf("NULL\n");
+}
+
+struct DataEntry {
+	Data arrayFlower[200];
+};
+
+struct Bmu {
+   int l;
+   int c;
+   double activation;
+};
+
+struct List_header {
+   int nb;
+   struct bmu *bmu_list;
+   struct bmu *last;
+};
 
 struct DataEntry defineData()
 {
-  DEFINE_LINE_AND_CHARACTERE();
+  DEFINE_NUMBER_OF_LINE();
 
   FILE* file = NULL;
-  char line[charactere]; 
+  char line[100] = ""; 
   char* string = "";
   int i = 0;
+
+  Liste *maListe = initialisation();
 
   struct Data flower[numberOfLine];
   struct DataEntry flowerArray;
 
   file = fopen(filename, "r");
-  if (file != NULL)
-  {
-  	while((fgets(line,charactere,file)) != NULL)
-    {
-      initializeData(&flower[i]);
-      flower[i].sepal[0] = strtod(strtok(line,","), &string);
-      printf("\n%f",flower[i].sepal[0]);
-      flower[i].sepal[0] = strtod(strtok(NULL,","), &string);
-      printf("\n%f",flower[i].sepal[0]);
-      flower[i].petal[0] = strtod(strtok(NULL,","), &string);
-      printf("\n%f",flower[i].petal[0]);
-      flower[i].petal[1] = strtod(strtok(NULL,","), &string);
-      printf("\n%f",flower[i].petal[1]);
-      flower[i].norm = sqrt(flower[i].sepal[0]) + sqrt(flower[i].sepal[1]) + sqrt(flower[i].petal[0]) + sqrt(flower[i].petal[1]);
-      printf("\n%f",flower[i].norm);
-      flower[0].label = strtok(NULL,",");
-      printf("\n%s",flower[i].label);
-      flowerArray.arrayFlower[i] = flower[i];
-    }
-  	fclose(file);
-  	return flowerArray;
-  }
-  else
-  {
-  	printf("Impossible to open the file");
-  	return flowerArray;
-  }
-}
+  while((fgets(line,100,file)) != NULL)
+	{
+	  initializeData(&flower[i]);
+	  flower[i].sepal[0] = strtod(strtok(line,","), &string);
+	  flower[i].sepal[1] = strtod(strtok(NULL,","), &string);
+	  flower[i].petal[0] = strtod(strtok(NULL,","), &string);
+	  flower[i].petal[1] = strtod(strtok(NULL,","), &string);
+	  flower[i].norm = sqrt(flower[i].sepal[0]) + sqrt(flower[i].sepal[1]) + sqrt(flower[i].petal[0]) + sqrt(flower[i].petal[1]);
+	  flower[i].label = strtok(NULL,",");
+	  flowerArray.arrayFlower[i] = flower[i];
+	  insertion(maListe, flower[i]);
+	  afficherListe(maListe);
+	}
+  afficherListe(maListe);
+  return flowerArray;
+}	
 
 int main()
 {
   defineData();
   return 0;
 }
-
