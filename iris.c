@@ -3,7 +3,6 @@
 #include <string.h>
 #include <math.h>
 #define filename "iris.data.txt"
-#define DEFINE_NUMBER_OF_LINE() int numberOfLine = fileDimension() +1 
 
 
 int fileDimension()
@@ -85,18 +84,11 @@ void insertion(Liste *liste, Data nvNombre)
         exit(EXIT_FAILURE);
     }
     nouveau->sepal[0] = nvNombre.sepal[0];
-    //printf("\n%f",nouveau -> sepal[0]);
     nouveau->sepal[1] = nvNombre.sepal[1];
-    //printf("\n%f",nouveau -> sepal[1]);
     nouveau->petal[0] = nvNombre.petal[0];
-    //printf("\n%f",nouveau -> petal[0]);
     nouveau->petal[1] = nvNombre.petal[1];
-    //printf("\n%f",nouveau -> petal[1]);
     nouveau->norm = nvNombre.norm;
-    //printf("\n%f",nouveau -> norm);
     nouveau->label = nvNombre.label;
-    //printf("\n%s",nouveau -> label);
-
 
     /* Insertion de l'élément au début de la liste */
     nouveau->suivant = liste->premier;
@@ -129,20 +121,16 @@ void afficherListe(Liste *liste)
 
     while (actuel != NULL)
     {
-        printf("%f -> ", actuel->sepal[0]);
-        printf("%f -> ", actuel->sepal[1]);
-        printf("%f -> ", actuel->petal[0]);
-        printf("%f -> ", actuel->petal[1]);
-        printf("%f -> ", actuel->norm);
-        printf("%s -> ", actuel->label);
+        printf("%f\n", actuel->sepal[0]);
+        printf("%f\n", actuel->sepal[1]);
+        printf("%f\n", actuel->petal[0]);
+        printf("%f\n", actuel->petal[1]);
+        printf("%f\n", actuel->norm);
+        printf("%s\n", actuel->label);
         actuel = actuel->suivant;
     }
     printf("NULL\n");
 }
-
-struct DataEntry {
-	Data arrayFlower[200];
-};
 
 struct Bmu {
    int l;
@@ -156,40 +144,35 @@ struct List_header {
    struct bmu *last;
 };
 
-struct DataEntry defineData()
+Liste defineData(Liste *maListe)
 {
-  DEFINE_NUMBER_OF_LINE();
-
   FILE* file = NULL;
   char line[100] = ""; 
   char* string = "";
-  int i = 0;
 
-  Liste *maListe = initialisation();
-
-  struct Data flower[numberOfLine];
-  struct DataEntry flowerArray;
+  maListe = initialisation();
+  struct Data flower;
+  initializeData(&flower);
 
   file = fopen(filename, "r");
   while((fgets(line,100,file)) != NULL)
 	{
-	  initializeData(&flower[i]);
-	  flower[i].sepal[0] = strtod(strtok(line,","), &string);
-	  flower[i].sepal[1] = strtod(strtok(NULL,","), &string);
-	  flower[i].petal[0] = strtod(strtok(NULL,","), &string);
-	  flower[i].petal[1] = strtod(strtok(NULL,","), &string);
-	  flower[i].norm = sqrt(flower[i].sepal[0]) + sqrt(flower[i].sepal[1]) + sqrt(flower[i].petal[0]) + sqrt(flower[i].petal[1]);
-	  flower[i].label = strtok(NULL,",");
-	  flowerArray.arrayFlower[i] = flower[i];
-	  insertion(maListe, flower[i]);
+	  flower.sepal[0] = strtod(strtok(line,","), &string);
+	  flower.sepal[1] = strtod(strtok(NULL,","), &string);
+	  flower.petal[0] = strtod(strtok(NULL,","), &string);
+	  flower.petal[1] = strtod(strtok(NULL,","), &string);
+	  flower.norm = sqrt(flower.sepal[0]) + sqrt(flower.sepal[1]) + sqrt(flower.petal[0]) + sqrt(flower.petal[1]);
+	  flower.label = strtok(NULL,",");
+	  insertion(maListe, flower);
 	  afficherListe(maListe);
 	}
-  afficherListe(maListe);
-  return flowerArray;
+  return *maListe;
 }	
 
 int main()
 {
-  defineData();
+  Liste maListe2;
+  maListe2 = defineData(&maListe2);
+  afficherListe(&maListe2);
   return 0;
 }
