@@ -22,7 +22,7 @@ struct Node
   double sepal_width;
   double petal_length;
   double petal_width;
-  double distance_eucledienne
+  double distance_eucledienne;
   char label[20]; 
 };
 
@@ -52,7 +52,7 @@ int fileDimension()
   }
 }
 
-Data* fill_the_dataSet(Data* dataSet)
+void fill_the_dataSet(Data* dataSet)
 {
   FILE* file = NULL;
   char line[100] = ""; 
@@ -69,17 +69,14 @@ Data* fill_the_dataSet(Data* dataSet)
     strcpy(dataSet[count].label,strtok(NULL,","));
     count++;
 	}
-
   fclose(file);
-  return dataSet;
 }
 
-Data* normalization(Data* dataSet, int sizeOfDataSet)
+void normalization(Data* dataSet, int sizeOfDataSet)
 {
-  int count;
   double norm;
 
-  for (count = 0; count < sizeOfDataSet; count++)
+  for (int count = 0; count < sizeOfDataSet; count++)
   {
     norm = sqrt(pow(dataSet[count].sepal_length,2)+pow(dataSet[count].sepal_width,2)+pow(dataSet[count].petal_length,2)+pow(dataSet[count].petal_width,2));
     dataSet[count].sepal_length /= norm;
@@ -87,7 +84,6 @@ Data* normalization(Data* dataSet, int sizeOfDataSet)
     dataSet[count].petal_length /= norm;
     dataSet[count].petal_width /= norm;
   }
-  return dataSet;
 }
 
 Data averaging(Data* dataSet, int sizeOfDataSet)
@@ -110,29 +106,83 @@ Data averaging(Data* dataSet, int sizeOfDataSet)
   return average;
 }
 
-Data* initialization_of_the_map(int numberOfNodes, Data average)
+double doubleRand(double min, double max)
 {
-  int columns = ceil(sqrt(numberOfNodes));
-  int lines = ceil(numberOfNodes / columns);
-  printf("\n%d" "\n%d", columns, lines);
+  double scale = ((double)rand() / RAND_MAX);
+  return min + scale * (max - min);
+}
 
-  return &average;
+void initialization_of_the_map(size_t rows, size_t columns, Node **net, Data average)
+{
+  double sepal_length_average_maxValue = average.sepal_length + 0.005;
+  double sepal_length_average_minValue = average.sepal_length - 0.002;
+  double sepal_width_average_maxValue = average.sepal_width + 0.005;
+  double sepal_width_average_minValue = average.sepal_width - 0.002;
+  double petal_length_average_maxValue = average.petal_length + 0.005;
+  double petal_length_average_minValue = average.petal_length - 0.002;
+  double petal_width_average_maxValue = average.petal_width + 0.005;
+  double petal_width_average_minValue = average.petal_width - 0.002;
+
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      net[i][j].sepal_length = doubleRand(sepal_length_average_minValue, sepal_length_average_maxValue);
+      net[i][j].sepal_width = doubleRand(sepal_width_average_minValue, sepal_width_average_maxValue);
+      net[i][j].petal_length = doubleRand(petal_length_average_minValue, petal_length_average_maxValue);
+      net[i][j].petal_width = doubleRand(petal_width_average_minValue, petal_width_average_maxValue);
+    }
+  }
+}
+
+void initialize_shuffle_array(int* array, size_t sizeOfTheArray)
+{
+  for (int count = 0; count < sizeOfTheArray; count++)
+  {
+    array[count] = count;
+  }
+}
+
+void shuffle_the_array(int* array, int sizeOfArray)
+{
+  int temporaryValueOfCell, randNumber;
+  for (int count = 0; count < sizeOfArray; count++)
+  {
+    randNumber = rand()%(sizeOfArray);
+    temporaryValueOfCell = array[count];
+    array[count] = array[randNumber];
+    array[randNumber] = temporaryValueOfCell;
+  }
 }
 
 int main()
 {
+  srand(time(NULL));
+
   int numberOfLines = fileDimension();
-	Data *dataSet = calloc(numberOfLines, sizeof(Data));
+  Data dataSet[numberOfLines];
+  fill_the_dataSet(dataSet);
+  normalization(dataSet, sizeof(dataSet)/sizeof(Data));
 
-  dataSet = fill_the_dataSet(dataSet);
-  dataSet = normalization(dataSet, numberOfLines);
-
+  Data average = averaging(dataSet, sizeof(dataSet)/sizeof(Data));
+  
   int numberOfNodes = 5*sqrt(numberOfLines);
+  size_t rows = ceil(sqrt(numberOfNodes));
+  size_t columns = ceil(numberOfNodes / rows);
+  Node **net = calloc(rows, sizeof(Node *));
+  for(int i = 0; i < rows; i++)
+  {
+    net[i] = calloc(columns, sizeof(Node));
+  }
 
-  Data average;
-  //average = averaging(dataSet, numberOfLines);
+  initialization_of_the_map(rows, columns, net, average);
 
-	//printf("\n%f" "\n%f" "\n%f" "\n%f", average.sepal_length, average.sepal_width, average.petal_length, average.petal_width );
-  initialization_of_the_map(numberOfNodes, average);
+  int array[numberOfLines];
+  initialize_shuffle_array(array, sizeof(array)/sizeof(int));
+  shuffle_the_array(array, sizeof(array)/sizeof(int));
+
+
+
+  printf("\n%f" "\n%f", net[5][7].sepal_length, net[3][4].sepal_length);
 	return 0;
 }
