@@ -22,7 +22,7 @@ struct Node
   double sepal_width;
   double petal_length;
   double petal_width;
-  double distance_eucledienne;
+  double euclidean_distance;
   char label[20]; 
 };
 
@@ -66,7 +66,7 @@ void fill_the_dataSet(Data* dataSet)
 	  dataSet[count].sepal_width = strtod(strtok(NULL,","), &string);
 	  dataSet[count].petal_length = strtod(strtok(NULL,","), &string);
 	  dataSet[count].petal_width = strtod(strtok(NULL,","), &string);
-    strcpy(dataSet[count].label,strtok(NULL,","));
+    strcpy(dataSet[count].label , strtok(NULL,","));
     count++;
 	}
   fclose(file);
@@ -155,6 +155,81 @@ void shuffle_the_array(int* array, int sizeOfArray)
   }
 }
 
+void calculate_euclidean_distance(size_t rows, size_t columns, Node **net, Data* data)
+{
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      net[i][j].euclidean_distance = sqrt(pow(net[i][j].sepal_length-data->sepal_length,2)+pow(net[i][j].sepal_width-data->sepal_width,2)+pow(net[i][j].petal_length-data->petal_length,2)+pow(net[i][j].petal_width-data->petal_width,2));
+    }
+  }
+}
+
+int* best_match_unit(int* bmuIndex, size_t rows, size_t columns, Node **net)
+{
+  double euclideanDistanceMin = net[0][0].euclidean_distance;
+
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      if (net[i][j].euclidean_distance < euclideanDistanceMin)
+      {
+        euclideanDistanceMin = net[i][j].euclidean_distance;
+        bmuIndex[0] = i;
+        bmuIndex[1] = j;
+      }
+    }
+  }
+  return bmuIndex;
+}
+
+double alpha_function(double alpha_initial, int iteration, int iteration_max)
+{
+  return alpha_initial*(1-(iteration/iteration_max));
+}
+
+int neighborhood(int nhd_size, int* bmuIndex, int* nodeIndex)
+{
+  if (abs(bmuIndex[0]-nodeIndex[0]) < nhd_size && abs(bmuIndex[1]-nodeIndex[1]) < nhd_size)
+  {
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
+void learning_rule(size_t rows, size_t columns, Node **net, int nhd_size, int* bmuIndex, double alpha, Data* data)
+{
+  int nodeIndex[2];
+  int nhd;
+
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      nodeIndex[0] = i;
+      nodeIndex[1] = j; 
+      nhd = neighborhood(nhd_size, bmuIndex, nodeIndex);
+      net[i][j].sepal_length += alpha*nhd*(data->sepal_length-net[i][j].sepal_length);
+      net[i][j].sepal_width += alpha*nhd*(data->sepal_width-net[i][j].sepal_width);
+      net[i][j].petal_length += alpha*nhd*(data->petal_length-net[i][j].petal_length);
+      net[i][j].petal_width += alpha*nhd*(data->petal_width-net[i][j].petal_width);
+    }
+  }
+}
+
+char* concat(const char *s1, const char *s2)
+{
+  char *result = malloc(strlen(s1) + strlen(s2) + 1);
+  strcpy(result, s1);
+  strcat(result, s2);
+  return result;
+}
+
 int main()
 {
   srand(time(NULL));
@@ -177,12 +252,58 @@ int main()
 
   initialization_of_the_map(rows, columns, net, average);
 
-  int array[numberOfLines];
-  initialize_shuffle_array(array, sizeof(array)/sizeof(int));
-  shuffle_the_array(array, sizeof(array)/sizeof(int));
+  
+  int shuffleArray[numberOfLines];
+  initialize_shuffle_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));
 
+  //phase1
+  int iteration_max = 800;
+  double alpha_initial = 0.8;
+  int nhd_size = 3;
 
+  shuffle_the_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));
 
-  printf("\n%f" "\n%f", net[5][7].sepal_length, net[3][4].sepal_length);
+  double alpha;
+  int bmuIndex[2]= {0,0};
+  int randVectorDataIndex;
+  for(int iteration = 0; iteration < iteration_max; iteration++)
+  {
+    randVectorDataIndex = rand()%(sizeof(dataSet)/sizeof(Data));
+    calculate_euclidean_distance(rows, columns, net, &dataSet[shuffleArray[randVectorDataIndex]]);
+
+    best_match_unit(bmuIndex, rows, columns, net);
+
+    alpha = alpha_function(alpha_initial, iteration, iteration_max);
+    learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);
+    //printf("%f\n", net[1][1].petal_width);
+  }
+
+  //labelisation
+  for(int count = 0; count< sizeof(dataSet)/sizeof(Data); count++)
+  {
+    calculate_euclidean_distance(rows, columns, net, &dataSet[count]);
+    best_match_unit(bmuIndex, rows, columns, net);
+    strcpy(net[bmuIndex[0]][bmuIndex[1]].label , dataSet[count].label);
+  }
+
+  char pound[30] = "";
+  char colorPond[30] = "";
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      //printf("%s#\n" "%s#\n" "%s#\n", "\x1B[31m", "\x1B[32m", "\x1B[34m");
+      if (strcmp(net[i][j].label , dataSet[0].label) == 0)
+      {
+        //strcat(pound, "%s#\n ");
+        //strcat(colorPond, ",\x1B[31m");
+        concat(pound, "%s#\n ");
+        concat(colorPond, ",\x1B[31m");
+        printf("%s","ok");
+      } 
+    }
+    concat(pound, colorPond);
+    printf("%s",pound);
+  }
 	return 0;
 }
