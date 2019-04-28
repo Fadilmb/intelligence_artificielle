@@ -114,14 +114,16 @@ double doubleRand(double min, double max)
 
 void initialization_of_the_map(size_t rows, size_t columns, Node **net, Data average)
 {
-  double sepal_length_average_maxValue = average.sepal_length + 0.005;
-  double sepal_length_average_minValue = average.sepal_length - 0.002;
-  double sepal_width_average_maxValue = average.sepal_width + 0.005;
-  double sepal_width_average_minValue = average.sepal_width - 0.002;
-  double petal_length_average_maxValue = average.petal_length + 0.005;
-  double petal_length_average_minValue = average.petal_length - 0.002;
-  double petal_width_average_maxValue = average.petal_width + 0.005;
-  double petal_width_average_minValue = average.petal_width - 0.002;
+  double maxBoundaryAveraging = 0.005;
+  double minBoundrayAveraging = 0.002;
+  double sepal_length_average_maxValue = average.sepal_length + maxBoundaryAveraging;
+  double sepal_length_average_minValue = average.sepal_length - minBoundrayAveraging;
+  double sepal_width_average_maxValue = average.sepal_width + maxBoundaryAveraging;
+  double sepal_width_average_minValue = average.sepal_width - minBoundrayAveraging;
+  double petal_length_average_maxValue = average.petal_length + maxBoundaryAveraging;
+  double petal_length_average_minValue = average.petal_length - minBoundrayAveraging;
+  double petal_width_average_maxValue = average.petal_width + maxBoundaryAveraging;
+  double petal_width_average_minValue = average.petal_width - minBoundrayAveraging;
 
   for (int i = 0; i < rows; i++)
   {
@@ -222,14 +224,88 @@ void learning_rule(size_t rows, size_t columns, Node **net, int nhd_size, int* b
   }
 }
 
+void labelization(size_t rows, size_t columns, Node **net, Data* dataSet, int sizeOfDataSet)
+{
+  int bmuIndex[2]= {0,0};
+  for(int count = 0; count < sizeOfDataSet; count++)
+  {
+    calculate_euclidean_distance(rows, columns, net, &dataSet[count]);
+    best_match_unit(bmuIndex, rows, columns, net);
+    strcpy(net[bmuIndex[0]][bmuIndex[1]].label , dataSet[count].label);
+  }
+}
+
+void display_the_map(size_t rows, size_t columns, Node **net, Data* dataSet, int sizeOfDataSet)
+{
+  char label1[20] = "", label2[20] = "", label3[20] = "";
+
+  strcpy(label1 , dataSet[0].label);
+  printf("\x1B[31m" "%s", label1);
+  for(int count = 1; count < sizeOfDataSet; count++)
+  {
+    if ((strcmp(label1 , dataSet[count].label) != 0) && ((strcmp(label2 , "")) == 0))
+    {
+      strcpy(label2 , dataSet[count].label);
+      printf("\x1B[32m" "\x1B[32m" "%s", label2);
+    }
+    else if ((strcmp(label1 , dataSet[count].label) != 0) && (strcmp(label2 , dataSet[count].label) != 0) && ((strcmp(label3 , "")) == 0))
+    {
+      strcpy(label3 , dataSet[count].label);
+      printf("\x1B[34m" "%s", label3);
+    }
+  }
+
+  for (int i = 0; i < rows; i++)
+  {
+    for (int j = 0; j < columns; j++)
+    {
+      if (strcmp(net[i][j].label , label1) == 0)
+      {
+        printf("%s#","\x1B[31m");
+      }
+      else if (strcmp(net[i][j].label , label2) == 0)
+      {
+        printf("%s#","\x1B[32m");
+      }
+      else if (strcmp(net[i][j].label , label3) == 0)
+      {
+        printf("%s#","\x1B[34m");
+      }
+      else
+      {
+        printf("%s"," ");
+      }
+    }
+  printf("%s\n"," ");
+  } 
+}
+
+void testing(size_t rows, size_t columns, Node **net, Data* dataSet, int sizeOfDataSet)
+{
+  float trueResult = 0;
+  int bmuIndex[2]= {0,0};
+  for(int count = 0; count< sizeOfDataSet; count++)
+  {
+    calculate_euclidean_distance(rows, columns, net, &dataSet[count]);
+    best_match_unit(bmuIndex, rows, columns, net);
+    if (strcmp(net[bmuIndex[0]][bmuIndex[1]].label , dataSet[count].label) == 0)
+    {
+      trueResult++;
+    }
+  }
+  printf("\x1B[0m" "The test succeed at %f%%\n", (trueResult/sizeOfDataSet)*100);  
+}
+
 int main()
 {
-  //initialisation
+  //initialization
   srand(time(NULL));
 
   int numberOfLines = fileDimension();
   Data dataSet[numberOfLines];
+
   fill_the_dataSet(dataSet);
+
   normalization(dataSet, sizeof(dataSet)/sizeof(Data));
 
   Data average = averaging(dataSet, sizeof(dataSet)/sizeof(Data));
@@ -237,6 +313,7 @@ int main()
   int numberOfNodes = 5*sqrt(numberOfLines);
   size_t rows = ceil(sqrt(numberOfNodes));
   size_t columns = ceil(numberOfNodes / rows);
+
   Node **net = calloc(rows, sizeof(Node *));
   for(int i = 0; i < rows; i++)
   {
@@ -245,10 +322,10 @@ int main()
 
   initialization_of_the_map(rows, columns, net, average);
 
-  
   int shuffleArray[numberOfLines];
   initialize_shuffle_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));
 
+  
   //phase1
   int iteration_max = 300;
   double alpha_initial = 0.8;
@@ -262,13 +339,16 @@ int main()
   for(int iteration = 0; iteration < iteration_max; iteration++)
   {
     randVectorDataIndex = rand()%(sizeof(dataSet)/sizeof(Data));
+
     calculate_euclidean_distance(rows, columns, net, &dataSet[shuffleArray[randVectorDataIndex]]);
 
     best_match_unit(bmuIndex, rows, columns, net);
 
     alpha = alpha_function(alpha_initial, iteration, iteration_max);
+
     learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);
   }
+
 
   //phase2
   iteration_max = 2000;
@@ -279,6 +359,7 @@ int main()
   for(int iteration = 0; iteration < iteration_max; iteration++)
   {
     randVectorDataIndex = rand()%(sizeof(dataSet)/sizeof(Data));
+
     calculate_euclidean_distance(rows, columns, net, &dataSet[shuffleArray[randVectorDataIndex]]);
 
     best_match_unit(bmuIndex, rows, columns, net);
@@ -287,50 +368,14 @@ int main()
     learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);
   }
 
-  //labelisation
-  for(int count = 0; count< sizeof(dataSet)/sizeof(Data); count++)
-  {
-    calculate_euclidean_distance(rows, columns, net, &dataSet[count]);
-    best_match_unit(bmuIndex, rows, columns, net);
-    strcpy(net[bmuIndex[0]][bmuIndex[1]].label , dataSet[count].label);
-  }
+  //labelization
+  labelization(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));
 
   //affichage
-  for (int i = 0; i < rows; i++)
-  {
-    for (int j = 0; j < columns; j++)
-    {
-      if (strcmp(net[i][j].label , dataSet[0].label) == 0)
-      {
-        printf("%s#","\x1B[31m");
-      }
-      else if (strcmp(net[i][j].label , dataSet[60].label) == 0)
-      {
-        printf("%s#","\x1B[32m");
-      }
-      else if (strcmp(net[i][j].label , dataSet[110].label) == 0)
-      {
-        printf("%s#","\x1B[34m");
-      }
-      else
-      {
-        printf("%s"," ");
-      }
-    }
-  printf("%s\n"," ");
-  }
+  display_the_map(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));
 
   //test
-  float trueResult = 0;
-  for(int count = 0; count< sizeof(dataSet)/sizeof(Data); count++)
-  {
-    calculate_euclidean_distance(rows, columns, net, &dataSet[count]);
-    best_match_unit(bmuIndex, rows, columns, net);
-    if (strcmp(net[bmuIndex[0]][bmuIndex[1]].label ,dataSet[count].label) == 0)
-    {
-      trueResult++;
-    }
-  }
-  printf("\x1B[0m" "The test succeed at %f%%\n", (trueResult/(sizeof(dataSet)/sizeof(Data)))*100);  
+  testing(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));
+
 	return 0;
 }
