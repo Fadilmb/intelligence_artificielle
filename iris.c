@@ -189,7 +189,7 @@ int* best_match_unit(int* bmuIndex, size_t rows, size_t columns, Node **net)
 
 double alpha_function(double alpha_initial, int iteration, int iteration_max)
 {
-  return alpha_initial*(1-(iteration/iteration_max));
+  return alpha_initial*(1 - (iteration/iteration_max));
 }
 
 int neighborhood(int nhd_size, int* bmuIndex, int* nodeIndex)
@@ -227,7 +227,7 @@ void learning_rule(size_t rows, size_t columns, Node **net, int nhd_size, int* b
 void labelization(size_t rows, size_t columns, Node **net, Data* dataSet, int sizeOfDataSet)
 {
   int bmuIndex[2]= {0,0};
-  for(int count = 0; count < sizeOfDataSet; count++)
+  for (int count = 0; count < sizeOfDataSet; count++)
   {
     calculate_euclidean_distance(rows, columns, net, &dataSet[count]);
     best_match_unit(bmuIndex, rows, columns, net);
@@ -241,7 +241,7 @@ void display_the_map(size_t rows, size_t columns, Node **net, Data* dataSet, int
 
   strcpy(label1 , dataSet[0].label);
   printf("\x1B[31m" "%s", label1);
-  for(int count = 1; count < sizeOfDataSet; count++)
+  for (int count = 1; count < sizeOfDataSet; count++)
   {
     if ((strcmp(label1 , dataSet[count].label) != 0) && ((strcmp(label2 , "")) == 0))
     {
