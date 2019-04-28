@@ -293,7 +293,7 @@ void testing(size_t rows, size_t columns, Node **net, Data* dataSet, int sizeOfD
       trueResult++;
     }
   }
-  printf("\x1B[0m" "The test succeed at %f%%\n", (trueResult/sizeOfDataSet)*100);  
+  printf("\x1B[0m" "The test succeed at %0.2f%%\n", (trueResult/sizeOfDataSet)*100);  
 }
 
 int main()
