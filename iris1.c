@@ -222,16 +222,9 @@ void learning_rule(size_t rows, size_t columns, Node **net, int nhd_size, int* b
   }
 }
 
-char* concat(const char *s1, const char *s2)
-{
-  char *result = malloc(strlen(s1) + strlen(s2) + 1);
-  strcpy(result, s1);
-  strcat(result, s2);
-  return result;
-}
-
 int main()
 {
+  //initialisation
   srand(time(NULL));
 
   int numberOfLines = fileDimension();
@@ -257,7 +250,7 @@ int main()
   initialize_shuffle_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));
 
   //phase1
-  int iteration_max = 800;
+  int iteration_max = 300;
   double alpha_initial = 0.8;
   int nhd_size = 3;
 
@@ -275,7 +268,23 @@ int main()
 
     alpha = alpha_function(alpha_initial, iteration, iteration_max);
     learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);
-    //printf("%f\n", net[1][1].petal_width);
+  }
+
+  //phase2
+  iteration_max = 2000;
+  alpha_initial = 0.08;
+
+  shuffle_the_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));
+
+  for(int iteration = 0; iteration < iteration_max; iteration++)
+  {
+    randVectorDataIndex = rand()%(sizeof(dataSet)/sizeof(Data));
+    calculate_euclidean_distance(rows, columns, net, &dataSet[shuffleArray[randVectorDataIndex]]);
+
+    best_match_unit(bmuIndex, rows, columns, net);
+
+    alpha = alpha_function(alpha_initial, iteration, iteration_max);
+    learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);
   }
 
   //labelisation
@@ -286,24 +295,42 @@ int main()
     strcpy(net[bmuIndex[0]][bmuIndex[1]].label , dataSet[count].label);
   }
 
-  char pound[30] = "";
-  char colorPond[30] = "";
+  //affichage
   for (int i = 0; i < rows; i++)
   {
     for (int j = 0; j < columns; j++)
     {
-      //printf("%s#\n" "%s#\n" "%s#\n", "\x1B[31m", "\x1B[32m", "\x1B[34m");
       if (strcmp(net[i][j].label , dataSet[0].label) == 0)
       {
-        //strcat(pound, "%s#\n ");
-        //strcat(colorPond, ",\x1B[31m");
-        concat(pound, "%s#\n ");
-        concat(colorPond, ",\x1B[31m");
-        printf("%s","ok");
-      } 
+        printf("%s#","\x1B[31m");
+      }
+      else if (strcmp(net[i][j].label , dataSet[60].label) == 0)
+      {
+        printf("%s#","\x1B[32m");
+      }
+      else if (strcmp(net[i][j].label , dataSet[110].label) == 0)
+      {
+        printf("%s#","\x1B[34m");
+      }
+      else
+      {
+        printf("%s"," ");
+      }
     }
-    concat(pound, colorPond);
-    printf("%s",pound);
+  printf("%s\n"," ");
   }
+
+  //test
+  float trueResult = 0;
+  for(int count = 0; count< sizeof(dataSet)/sizeof(Data); count++)
+  {
+    calculate_euclidean_distance(rows, columns, net, &dataSet[count]);
+    best_match_unit(bmuIndex, rows, columns, net);
+    if (strcmp(net[bmuIndex[0]][bmuIndex[1]].label ,dataSet[count].label) == 0)
+    {
+      trueResult++;
+    }
+  }
+  printf("\x1B[0m" "The test succeed at %f%%\n", (trueResult/(sizeof(dataSet)/sizeof(Data)))*100);  
 	return 0;
 }
