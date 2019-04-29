@@ -112,7 +112,7 @@ double doubleRand(double min, double max)
   return min + scale * (max - min);
 }
 
-void initialization_of_the_map(size_t rows, size_t columns, Node **net, Data average)
+void initialization_of_the_net(size_t rows, size_t columns, Node **net, Data average)
 {
   double maxBoundaryAveraging = 0.005;
   double minBoundrayAveraging = 0.002;
@@ -235,7 +235,7 @@ void labelization(size_t rows, size_t columns, Node **net, Data* dataSet, int si
   }
 }
 
-void display_the_map(size_t rows, size_t columns, Node **net, Data* dataSet, int sizeOfDataSet)
+void display_the_net(size_t rows, size_t columns, Node **net, Data* dataSet, int sizeOfDataSet)
 {
   char label1[20] = "", label2[20] = "", label3[20] = "";
 
@@ -301,29 +301,29 @@ int main()
   //initialization
   srand(time(NULL));
 
-  int numberOfLines = fileDimension();
+  int numberOfLines = fileDimension();  //find the dimension of the dataset
   Data dataSet[numberOfLines];
 
-  fill_the_dataSet(dataSet);
+  fill_the_dataSet(dataSet); //import the dataset
 
-  normalization(dataSet, sizeof(dataSet)/sizeof(Data));
+  normalization(dataSet, sizeof(dataSet)/sizeof(Data)); //Normalize the dataset
 
-  Data average = averaging(dataSet, sizeof(dataSet)/sizeof(Data));
+  Data average = averaging(dataSet, sizeof(dataSet)/sizeof(Data));  //Calculate the average of the dataset
   
-  int numberOfNodes = 5*sqrt(numberOfLines);
-  size_t rows = ceil(sqrt(numberOfNodes));
-  size_t columns = ceil(numberOfNodes / rows);
+  int numberOfNodes = 5*sqrt(numberOfLines);   //calculate the number of nodes of the neuralnet
+  size_t rows = ceil(sqrt(numberOfNodes));     //calculate the number of rows of the neuralnet
+  size_t columns = ceil(numberOfNodes / rows); //calculate the number of columns of the neuralnet
 
-  Node **net = calloc(rows, sizeof(Node *));
+  Node **net = calloc(rows, sizeof(Node *));  //create the neuralnet
   for(int i = 0; i < rows; i++)
   {
     net[i] = calloc(columns, sizeof(Node));
   }
 
-  initialization_of_the_map(rows, columns, net, average);
+  initialization_of_the_net(rows, columns, net, average);  //initialize the neuralnet with average data
 
-  int shuffleArray[numberOfLines];
-  initialize_shuffle_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));
+  int shuffleArray[numberOfLines];                                           //Create the shuffle Array
+  initialize_shuffle_array(shuffleArray, sizeof(shuffleArray)/sizeof(int)); //Initiale the shuffle array with numbers
 
   
   //phase1
@@ -331,22 +331,22 @@ int main()
   double alpha_initial = 0.8;
   int nhd_size = 3;
 
-  shuffle_the_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));
+  shuffle_the_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));  //Shuffle the shuffle array
 
   double alpha;
   int bmuIndex[2]= {0,0};
   int randVectorDataIndex;
   for(int iteration = 0; iteration < iteration_max; iteration++)
   {
-    randVectorDataIndex = rand()%(sizeof(dataSet)/sizeof(Data));
+    randVectorDataIndex = rand()%(sizeof(dataSet)/sizeof(Data));     //extract a random vector from the database
 
-    calculate_euclidean_distance(rows, columns, net, &dataSet[shuffleArray[randVectorDataIndex]]);
+    calculate_euclidean_distance(rows, columns, net, &dataSet[shuffleArray[randVectorDataIndex]]);  //calcuate the eucledian distance
 
-    best_match_unit(bmuIndex, rows, columns, net);
+    best_match_unit(bmuIndex, rows, columns, net);                                                  //finding the best match unit (BMU)
 
-    alpha = alpha_function(alpha_initial, iteration, iteration_max);
+    alpha = alpha_function(alpha_initial, iteration, iteration_max);                                //Calculate Alpha
 
-    learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);
+    learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);  //Apply the learning rule to the neibourhood
   }
 
 
@@ -369,13 +369,13 @@ int main()
   }
 
   //labelization
-  labelization(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));
+  labelization(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));  //labelize the neuralnet 
 
   //affichage
-  display_the_map(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));
+  display_the_net(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));  //display the neuralnet on the terminal
 
   //test
-  testing(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));
+  testing(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));  //test the neuralnet
 
 	return 0;
 }
