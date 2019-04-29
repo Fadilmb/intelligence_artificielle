@@ -298,7 +298,7 @@ void testing(size_t rows, size_t columns, Node **net, Data* dataSet, int sizeOfD
 
 int main()
 {
-  //initialization
+  //Initialization:
   srand(time(NULL));
 
   int numberOfLines = fileDimension();  //find the dimension of the dataset
@@ -326,7 +326,7 @@ int main()
   initialize_shuffle_array(shuffleArray, sizeof(shuffleArray)/sizeof(int)); //Initiale the shuffle array with numbers
 
   
-  //phase1
+  //Phase 1:
   int iteration_max = 300;
   double alpha_initial = 0.8;
   int nhd_size = 3;
@@ -350,7 +350,7 @@ int main()
   }
 
 
-  //phase2
+  //Phase 2:
   iteration_max = 2000;
   alpha_initial = 0.08;
 
@@ -368,13 +368,13 @@ int main()
     learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);
   }
 
-  //labelization
+  //Labelization:
   labelization(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));  //labelize the neuralnet 
 
-  //affichage
+  //Display:
   display_the_net(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));  //display the neuralnet on the terminal
 
-  //test
+  //Test:
   testing(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));  //test the neuralnet
 
 	return 0;
