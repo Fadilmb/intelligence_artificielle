@@ -299,7 +299,7 @@ void testing(size_t rows, size_t columns, Node **net, Data* dataSet, int sizeOfD
 int main()
 {
   //Initialization:
-  srand(time(NULL));
+  srand(time(NULL)); //initialize rand() function
 
   int numberOfLines = fileDimension();  //find the dimension of the dataset
   Data dataSet[numberOfLines];
@@ -340,7 +340,7 @@ int main()
   {
     randVectorDataIndex = rand()%(sizeof(dataSet)/sizeof(Data));     //extract a random vector from the database
 
-    calculate_euclidean_distance(rows, columns, net, &dataSet[shuffleArray[randVectorDataIndex]]);  //calcuate the eucledian distance
+    calculate_euclidean_distance(rows, columns, net, &dataSet[shuffleArray[randVectorDataIndex]]);  //calcuate the eucledian distance between the random vector and the nodes
 
     best_match_unit(bmuIndex, rows, columns, net);                                                  //finding the best match unit (BMU)
 
