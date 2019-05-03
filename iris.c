@@ -276,7 +276,7 @@ void display_the_net(size_t rows, size_t columns, Node **net, Data* dataSet, int
         printf("%s"," ");
       }
     }
-  printf("%s\n"," ");
+    printf("%s\n"," ");
   } 
 }
 
@@ -306,9 +306,9 @@ int main()
 
   fill_the_dataSet(dataSet); //import the dataset
 
-  normalization(dataSet, sizeof(dataSet)/sizeof(Data)); //Normalize the dataset
+  normalization(dataSet, sizeof(dataSet)/sizeof(Data)); //normalize the dataset
 
-  Data average = averaging(dataSet, sizeof(dataSet)/sizeof(Data));  //Calculate the average of the dataset
+  Data average = averaging(dataSet, sizeof(dataSet)/sizeof(Data));  //calculate the average of the dataset
   
   int numberOfNodes = 5*sqrt(numberOfLines);   //calculate the number of nodes of the neuralnet
   size_t rows = ceil(sqrt(numberOfNodes));     //calculate the number of rows of the neuralnet
@@ -322,8 +322,8 @@ int main()
 
   initialization_of_the_net(rows, columns, net, average);  //initialize the neuralnet with average data
 
-  int shuffleArray[numberOfLines];                                           //Create the shuffle Array
-  initialize_shuffle_array(shuffleArray, sizeof(shuffleArray)/sizeof(int)); //Initiale the shuffle array with numbers
+  int shuffleArray[numberOfLines];                                           //create the shuffle Array
+  initialize_shuffle_array(shuffleArray, sizeof(shuffleArray)/sizeof(int)); //initiale the shuffle array with numbers
 
   
   //Phase 1:
@@ -331,7 +331,7 @@ int main()
   double alpha_initial = 0.8;
   int nhd_size = 3;
 
-  shuffle_the_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));  //Shuffle the shuffle array
+  shuffle_the_array(shuffleArray, sizeof(shuffleArray)/sizeof(int));  //shuffle the shuffle array
 
   double alpha;
   int bmuIndex[2]= {0,0};
@@ -344,9 +344,9 @@ int main()
 
     best_match_unit(bmuIndex, rows, columns, net);                                                  //finding the best match unit (BMU)
 
-    alpha = alpha_function(alpha_initial, iteration, iteration_max);                                //Calculate Alpha
+    alpha = alpha_function(alpha_initial, iteration, iteration_max);                                //calculate Alpha
 
-    learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);  //Apply the learning rule to the neibourhood
+    learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);  //apply the learning rule to the neibourhood
   }
 
 
@@ -367,6 +367,7 @@ int main()
     alpha = alpha_function(alpha_initial, iteration, iteration_max);
     learning_rule(rows, columns, net, nhd_size, bmuIndex, alpha, &dataSet[shuffleArray[randVectorDataIndex]]);
   }
+  
 
   //Labelization:
   labelization(rows, columns, net, dataSet, sizeof(dataSet)/sizeof(Data));  //labelize the neuralnet 
